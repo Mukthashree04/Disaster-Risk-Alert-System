@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 AI Disaster Prediction System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold">🌍 AI-Based Disaster Prediction & Early Warning System</h1>
+            <p class="mt-2 text-lg">Enter environmental data or fetch real-time weather to predict disaster likelihood.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        <div class="flex flex-col md:flex-row gap-8">
+            <!-- Left Column: Input Form and City Weather Info -->
+            <section class="md:w-1/2 bg-white p-6 rounded-lg shadow-md">
+                <!-- City Weather Info -->
+                <div id="weather-info" class="hidden mb-6 p-4 bg-blue-50 rounded-lg">
+                    <h3 class="text-lg font-semibold">Weather Information</h3>
+                    <p id="city-name" class="text-gray-700"></p>
+                    <p id="weather-condition" class="text-gray-700"></p>
+                    <p id="humidity" class="text-gray-700"></p>
+                    <p id="pressure" class="text-gray-700"></p>
+                    <p id="last-updated" class="text-gray-600 text-sm"></p>
+                </div>
+                <!-- Input Form -->
+                <h2 class="text-2xl font-semibold mb-4">Enter Conditions</h2>
+                <div class="mb-4">
+                    <label for="city" class="block text-gray-700 font-medium">City (Optional)</label>
+                    <input type="text" id="city" name="city" placeholder="e.g., Delhi"
+                           class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button type="button" id="fetch-weather"
+                            class="mt-2 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">
+                        Fetch Weather
+                    </button>
+                </div>
+                <form id="prediction-form" action="/predict" method="POST">
+                    <div class="mb-4">
+                        <label for="temperature" class="block text-gray-700 font-medium">Temperature (°C)</label>
+                        <input type="number" id="temperature" name="temperature" step="any" required
+                               placeholder="Typical: 0–50°C"
+                               class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label for="rainfall" class="block text-gray-700 font-medium">Rainfall (mm)</label>
+                        <input type="number" id="rainfall" name="rainfall" step="any" required
+                               placeholder="Typical: 0–500mm"
+                               class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label for="wind_speed" class="block text-gray-700 font-medium">Wind Speed (km/h)</label>
+                        <input type="number" id="wind_speed" name="wind_speed" step="any" required
+                               placeholder="Typical: 0–200km/h"
+                               class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button type="submit"
+                            class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+                        Predict
+                    </button>
+                </form>
+                <!-- Loading Spinner -->
+                <div id="loading" class="hidden mt-4 text-center">
+                    <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-gray-600">Processing...</p>
+                </div>
+            </section>
+
+            <!-- Right Column: Prediction Result -->
+            <section class="md:w-1/2">
+                {% if result %}
+                <div class="p-6 rounded-lg shadow-md {{ 'bg-red-100' if 'Warning' in result.message else 'bg-green-100' }}">
+                    <p class="text-lg font-semibold">{{ result.message }}</p>
+                    {% if result.probability %}
+                    <p class="text-md mt-2">Likelihood: {{ result.probability }}%</p>
+                    {% endif %}
+                    <div id="disaster-tips" class="mt-4 text-gray-700">
+                        {% if 'Warning' in result.message %}
+                        <p><strong>Safety Tips:</strong></p>
+                        <ul class="list-disc ml-6">
+                            <li>Evacuate to higher ground if flooding is possible (high rainfall: {{ result.inputs.rainfall }} mm).</li>
+                            <li>Secure loose objects and stay indoors to avoid wind-related injuries (wind speed: {{ result.inputs.wind_speed }} km/h).</li>
+                            <li>Stay updated with local weather alerts and emergency services.</li>
+                            <li>Prepare an emergency kit with food, water, and medical supplies.</li>
+                        </ul>
+                        {% else %}
+                        <p><strong>Safety Tips:</strong></p>
+                        <ul class="list-disc ml-6">
+                            <li>Continue monitoring weather conditions for changes.</li>
+                            <li>Ensure emergency plans are in place for unexpected events.</li>
+                            <li>Keep informed about local weather updates.</li>
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-4">
+        <div class="container mx-auto px-4 text-center">
+            <p>Developed with ❤️ using AI for disaster preparedness.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="/static/js/script.js"></script>
+</body>
+</html>

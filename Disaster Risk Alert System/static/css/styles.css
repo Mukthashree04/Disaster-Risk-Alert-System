@@ -1,0 +1,4 @@
+/* Custom styles to complement Tailwind */
+#loading {
+    transition: opacity 0.3s ease;
+}
